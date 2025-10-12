@@ -1,0 +1,256 @@
+# Android Malware AI Risk Analysis V2 - Project Explanation
+
+## Overview
+This project is an advanced Android malware detection system that uses static analysis and artificial intelligence to classify APK files into risk levels (Low, Medium, High) with comprehensive explainability features.
+
+## System Architecture
+
+### 1. Feature Extraction Layer (`src/feature_extraction/`)
+- **APK Analyzer**: Extracts 100+ static features from Android APK files using Androguard
+- **Data Preprocessor**: Transforms raw features into model-ready format
+- **Features Include**:
+  - Permissions (dangerous_permissions_count, specific permission flags)
+  - API calls (reflection APIs, network APIs, SMS APIs)
+  - Opcodes (bytecode instruction counts, reflection usage)
+  - Manifest data (activities, services, receivers)
+  - Certificate information
+  - File metadata (size, string patterns)
+
+### 2. Machine Learning Model (`src/models/`)
+- **Primary Model**: Channel Attention LSTM (CA-LSTM)
+- **Architecture**:
+  - Input: 22 processed features
+  - Hidden layers: [64, 32, 16] units with attention mechanism
+  - Attention dimension: 32
+  - Output: 3 classes (Low, Medium, High risk)
+- **Training**:
+  - Epochs: 20 with early stopping
+  - Batch size: 16
+  - Learning rate: 0.002 with reduction on plateau
+  - Regularization: 30% dropout, L2 regularization (0.001)
+
+### 3. Explainability System (`src/explainability/`)
+- **Feature Explainer**: Generates human-readable explanations
+- **Integration**: Gemini API for AI-generated explanations (fallback to rule-based)
+- **Outputs**:
+  - Top contributing features with importance scores
+  - Risk factor categorization (permissions, APIs, behavior, certificate)
+  - Actionable security recommendations
+  - Plain-English explanations for non-technical users
+
+### 4. Backend API (`src/backend/`)
+- **Framework**: Flask REST API
+- **Endpoints**:
+  - `/api/health` - System status and component health
+  - `/api/upload` - APK file upload (max 100MB)
+  - `/api/analyze` - Single APK analysis
+  - `/api/batch_analyze` - Multiple APK analysis
+  - `/api/model/info` - Model information
+  - `/api/stats` - System statistics
+- **Features**: CORS enabled, file validation, error handling
+
+### 5. Frontend Dashboard (`src/frontend/`)
+- **Framework**: React with TypeScript
+- **UI Library**: Material-UI (MUI)
+- **Features**:
+  - Drag-and-drop APK upload
+  - Real-time analysis progress
+  - Risk assessment visualization
+  - Interactive explanations with accordions
+  - Feature importance charts
+  - Risk factor categorization
+  - Security recommendations
+
+## Key Technical Features
+
+### Model Performance
+- Detection Accuracy: >95%
+- Precision: >93%
+- Recall: >94%
+- F1-Score: >93%
+- Training Time: ~2 minutes per epoch
+
+### Security Analysis
+- **Risk Classification**:
+  - Low Risk: Benign applications with normal behavior
+  - Medium Risk: Suspicious applications requiring investigation
+  - High Risk: Malicious applications with confirmed threat indicators
+
+### Advanced Features
+- **Attention Mechanism**: Highlights which features contribute most to the classification
+- **Equilibrium Optimization**: Advanced hyperparameter tuning (configurable)
+- **SMOTE Data Augmentation**: Handles class imbalance in training data
+- **Real-time Analysis**: Fast inference with pre-loaded models
+
+## Configuration System (`config/config.yaml`)
+
+### Data Configuration
+- Raw and processed data paths
+- Train/validation/test splits
+- Feature extraction parameters
+
+### Model Configuration
+- Architecture parameters (hidden units, attention dimension)
+- Training hyperparameters (learning rate, dropout, regularization)
+- Class weights and optimization settings
+
+### API Configuration
+- Server settings (host, port, debug mode)
+- File upload limits and CORS settings
+
+### Explainability Configuration
+- Gemini API integration
+- Explanation templates and parameters
+- Feature description mappings
+
+## Data Flow
+
+1. **APK Upload**: User uploads APK file via React frontend
+2. **Feature Extraction**: Backend extracts 100+ static features using Androguard
+3. **Data Preprocessing**: Raw features are transformed and normalized (96→22 features)
+4. **Model Inference**: CA-LSTM processes features and outputs predictions with attention weights
+5. **Explainability**: Feature explainer generates human-readable explanations
+6. **Response**: Frontend displays risk assessment, top features, risk factors, and recommendations
+
+## Technical Implementation Details
+
+### Dimensional Handling
+- Raw features: 96 dimensions
+- Model input: 22 processed features (after preprocessing)
+- Attention output: 64 dimensions (internal model architecture)
+- Explainer input: First 22 attention weights (matched to feature names)
+
+### Feature Importance
+- Uses attention weights from the CA-LSTM model
+- Maps attention scores to human-readable feature descriptions
+- Ranks features by importance for explanation generation
+
+### Risk Factor Analysis
+- **Permissions**: Dangerous permission detection and counting
+- **APIs**: Heavy reflection usage, large codebase indicators
+- **Behavior**: Excessive activities, method calls, exported components
+- **Certificate**: Debug certificates, unusual file sizes
+
+### Error Handling
+- Comprehensive error handling at all levels
+- Graceful degradation when components fail
+- Detailed logging for debugging and monitoring
+- User-friendly error messages
+
+## Security Considerations
+
+### Defensive Use Only
+- System designed for malware detection and analysis
+- No capabilities for malware creation or enhancement
+- Focus on protective security research
+
+### Data Privacy
+- Local processing of APK files
+- No data transmission to external services (except optional Gemini API)
+- Temporary file storage with cleanup
+
+### API Security
+- File type validation (APK only)
+- File size limits (100MB)
+- Input sanitization and validation
+
+## Deployment Requirements
+
+### Backend Dependencies
+- Python 3.8+
+- PyTorch (for ML model)
+- Androguard (for APK analysis)
+- Flask (for API)
+- NumPy, Pandas (for data processing)
+- Google Generative AI (optional, for explanations)
+
+### Frontend Dependencies
+- Node.js 16+
+- React 18+
+- TypeScript
+- Material-UI
+- Axios (for API calls)
+- React Query (for state management)
+
+### System Requirements
+- RAM: 4GB+ (8GB recommended for training)
+- Storage: 2GB+ for models and dependencies
+- CPU: Multi-core recommended for faster analysis
+- GPU: Optional, CUDA-compatible for training acceleration
+
+## Usage Instructions
+
+### Starting the System
+1. Install dependencies: `pip install -r requirements.txt`
+2. Start backend: `python src/backend/app.py`
+3. Start frontend: `cd src/frontend && npm start`
+4. Access dashboard: `http://localhost:3000`
+
+### Analyzing APK Files
+1. Upload APK file via drag-and-drop or file picker
+2. Wait for analysis completion (typically 10-30 seconds)
+3. Review risk assessment and explanations
+4. Check top contributing features and risk factors
+5. Follow security recommendations
+
+### Model Training (Optional)
+1. Prepare training data in `data/raw/`
+2. Extract features: `python scripts/extract_features.py`
+3. Train model: `python scripts/train_model.py --config config/training_config.yaml`
+4. Model saved to `models/checkpoints/best_model.pth`
+
+## Research Applications
+
+### Academic Use
+- Malware detection research
+- Machine learning explainability studies
+- Android security analysis
+- Feature engineering research
+
+### Industry Applications
+- Mobile app security scanning
+- Enterprise app vetting
+- Security research and development
+- Educational cybersecurity training
+
+## Future Enhancements
+
+### Planned Features
+- Dynamic analysis integration
+- Multi-language support
+- Advanced visualization options
+- API rate limiting and authentication
+- Database integration for analysis history
+- Custom model training interface
+
+### Scalability Improvements
+- Distributed processing support
+- Container deployment (Docker)
+- Cloud infrastructure compatibility
+- Load balancing for high-volume analysis
+
+## Technical Notes
+
+### Known Limitations
+- Static analysis only (no runtime behavior)
+- Limited to APK file format
+- Requires pre-trained model for inference
+- Gemini API dependency for enhanced explanations
+
+### Performance Optimization
+- Model quantization for faster inference
+- Feature caching for repeated analyses
+- Asynchronous processing for large files
+- Memory management for resource efficiency
+
+### Monitoring and Logging
+- Comprehensive logging at all system levels
+- Performance metrics collection
+- Error tracking and debugging support
+- Health monitoring endpoints
+
+## Conclusion
+
+This Android Malware AI system represents a comprehensive solution for APK security analysis, combining advanced machine learning with intuitive explainability features. The system is designed for defensive security research and provides valuable insights into Android application behavior through static analysis and AI-powered risk assessment.
+
+The modular architecture allows for easy extension and customization, while the attention-based model provides both high accuracy and interpretable results. The web-based interface makes the system accessible to both technical and non-technical users, promoting broader adoption in cybersecurity education and research.

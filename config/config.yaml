@@ -1,0 +1,97 @@
+# Android Malware AI V2 Configuration
+
+# Data Configuration
+data:
+  raw_data_path: "data/raw"
+  processed_data_path: "data/processed"
+  features_file: "features.csv"
+  labels_file: "labels.csv"
+  test_size: 0.2
+  validation_size: 0.1
+  random_state: 42
+
+# Feature Extraction
+feature_extraction:
+  max_features: 150
+  include_permissions: true
+  include_api_calls: true
+  include_opcodes: true
+  include_manifest: true
+  include_strings: true
+  opcode_ngrams: [1, 2, 3]
+  api_call_depth: 3
+
+# Model Configuration
+model:
+  name: "CA-LSTM"
+  input_dim: 22
+  hidden_units: [64, 32, 16]  # Deeper model for better learning
+  attention_dim: 32
+  dropout_rate: 0.3  # Moderate dropout for regularization
+  l2_regularization: 0.001  # Standard regularization
+  num_classes: 3  # Low, Medium, High
+
+# Training Configuration
+training:
+  epochs: 20  # Fewer epochs but deeper training
+  batch_size: 16  # Smaller batch for more gradient updates
+  learning_rate: 0.002  # Higher learning rate for faster convergence
+  patience: 15  # Sufficient patience for 20 epochs
+  monitor: "val_f1_score"
+  save_best_only: true
+  reduce_lr_patience: 7  # Reduce LR earlier
+  reduce_lr_factor: 0.5  # More aggressive LR reduction
+  min_lr: 0.00001
+
+# Equilibrium Optimization
+optimization:
+  enable: false
+  max_iterations: 30
+  population_size: 50
+  dimensions: 4  # batch_size, lr, hidden_units, dropout
+  bounds:
+    batch_size: [16, 128]
+    learning_rate: [0.00001, 0.01]
+    hidden_units: [32, 256]
+    dropout_rate: [0.1, 0.5]
+
+# Data Augmentation
+augmentation:
+  enable_smote: true
+  smote_k_neighbors: 5
+  smote_sampling_strategy: "auto"
+  enable_undersampling: false
+
+# Explainability
+explainability:
+  gemini_api_key_env: "AIzaSyCa7kBWIKbj-9rSTveheLWSlFNHWFM_SV0"
+  model_name: "gemini-pro"
+  temperature: 0.3
+  max_tokens: 200
+  explanation_template: |
+    Analyze this Android app classification result:
+    Risk Level: {risk_level}
+    Top Features: {top_features}
+    Feature Values: {feature_values}
+
+    Provide a clear, non-technical explanation of why this app is classified as {risk_level} risk.
+
+# API Configuration
+api:
+  host: "localhost"
+  port: 5000
+  debug: true
+  cors_enabled: true
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  log_file: "models/logs/training.log"
+
+# Evaluation
+evaluation:
+  metrics: ["accuracy", "precision", "recall", "f1_score", "auc"]
+  confusion_matrix: true
+  classification_report: true
+  save_predictions: true
