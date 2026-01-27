@@ -64,7 +64,7 @@ augmentation:
 
 # Explainability
 explainability:
-  gemini_api_key_env: "AIzaSyCa7kBWIKbj-9rSTveheLWSlFNHWFM_SV0"
+  gemini_api_key_env: "apikeyhere"
   model_name: "gemini-pro"
   temperature: 0.3
   max_tokens: 200
