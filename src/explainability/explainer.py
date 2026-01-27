@@ -19,7 +19,7 @@ class FeatureExplainer:
 
     def __init__(self, config: Dict[str, Any]):
         self.config = config
-        self.gemini_api_key = os.getenv(config.get('gemini_api_key_env', 'AIzaSyCa7kBWIKbj-9rSTveheLWSlFNHWFM_SV0'))
+        self.gemini_api_key = os.getenv(config.get('gemini_api_key_env', 'apikeyhere'))
         self.model_name = config.get('model_name', 'gemini-pro')
         self.temperature = config.get('temperature', 0.3)
         self.max_tokens = config.get('max_tokens', 200)
